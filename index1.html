@@ -1,0 +1,143 @@
+<html>
+  <head>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+
+      // Load Charts and the corechart package.
+      google.charts.load('current', {'packages':['corechart']});   
+      google.charts.load('current', {'packages':['table']});
+     // Draw the pie chart for Sarah's pizza when Charts is loaded.
+      google.charts.load('current', {'packages':['bar']});
+      google.charts.setOnLoadCallback(drawCpuLoads);
+
+      // Draw the pie chart for the Anthony's pizza when Charts is loaded.
+      google.charts.setOnLoadCallback(drawDiskUtilization);
+      google.charts.setOnLoadCallback(drawMemoryUtilization);
+      const obj = new XMLHttpRequest();
+      const url="http://54.198.253.253:9002/get_all_stats_json";
+      //const url="http://www.google.com";
+      obj.open("GET",url,false);
+      obj.send(null);
+        
+      var resp=JSON.parse(obj.responseText);
+      
+
+      // Callback that draws the pie chart for Sarah's pizza.
+      function drawCpuLoads() {
+        
+        var data = google.visualization.arrayToDataTable([
+          ['Time','Load'],
+          ['1 min ago',resp["cpu_load"][0]],
+          ['10 min ago',resp["cpu_load"][1]],
+          ['15 min ago',resp["cpu_load"][2]]
+        ]);
+
+        var options = {
+          chart: {
+            title: 'CPU load',
+            subtitle: 'CPU loads 1 min, 10 min and 15 min ago',
+          },
+          bars: 'vertical' // Required for Material Bar Charts.
+        };
+
+        var chart = new google.charts.Bar(document.getElementById('cpuUtil'));      
+
+        chart.draw(data, google.charts.Bar.convertOptions(options));
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Time');
+        data.addColumn('number', 'CPU load');
+        data.addRows([
+          ['1  min ago',resp["cpu_load"][0]],
+          ['10 min ago',resp["cpu_load"][1]],
+          ['15 min ago',resp["cpu_load"][2]],
+        ]);
+
+        var table = new google.visualization.Table(document.getElementById('cpuUtilText'));
+
+        table.draw(data, {showRowNumber: true, width: '100%', height: '100%'});
+      }
+
+      function drawDiskUtilization() {
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Utilized');
+        data.addColumn('number', 'percent');
+        data.addRows([
+          ['Utilized',resp["du"][3] ],
+          ['Unutilized', 100-resp["du"][3]],
+        ]);
+        var options = {title:'Disk utilization',
+                       width:400,
+                       height:300};
+        var chart = new google.visualization.PieChart(document.getElementById('diskUtil'));
+        chart.draw(data, options);
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Disk Util');
+        data.addColumn('number', 'Value');
+        data.addRows([
+          ['Total',resp["du"][0]],
+          ['Used',resp["du"][1] ],
+          ['Free',resp["du"][2]],
+          ['Disk Utilization %',resp["du"][3]]
+        ]);
+
+        var table = new google.visualization.Table(document.getElementById('diskUtilText'));
+
+        table.draw(data, {showRowNumber: true, width: '100%', height: '100%'});
+
+      }
+      function drawMemoryUtilization() {
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Utilized');
+        data.addColumn('number', 'percent');
+        data.addRows([
+          ['Utilized', resp["mem"][2]],
+          ['Unutilized', 100-resp["mem"][2]],
+        ]);
+        var options = {title:'Memory utilization',
+                       width:400,
+                       height:300};
+        var chart = new google.visualization.PieChart(document.getElementById('memoryUtil'));
+        chart.draw(data, options);
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Memory Util');
+        data.addColumn('number', 'Value');
+        data.addRows([
+          ['Total',resp["mem"][0]],
+          ['Available',resp["mem"][1] ],
+          ['Percentage of memory used ',resp["mem"][2]],
+          ['Used',resp["mem"][3]],
+          ['Free',resp["mem"][4]],
+          ['Active',resp["mem"][5]],
+          ['Inactive',resp["mem"][6]],
+          ['Buffers',resp["mem"][7]],
+          ['Cached',resp["mem"][8]],
+          ['Shared',resp["mem"][9]],
+          ['Slab',resp["mem"][10]]
+        ]);
+
+        var table = new google.visualization.Table(document.getElementById('memoryUtilText'));
+
+        table.draw(data, {showRowNumber: true, width: '100%', height: '100%'});
+      }
+    </script>
+  </head>
+  <body>
+    <!--Table and divs that hold the pie charts-->
+    <table class="columns">
+      <tr>
+        <td><div id="cpuUtil" style="border: 1px solid #ccc"></div></td>
+        <td><div id="diskUtil" style="border: 1px solid #ccc"></div></td>
+        <td><div id="memoryUtil" style="border: 1px solid #ccc"></div></td>
+      </tr>
+    </table>
+    <table class="columns">
+      <tr>
+        <td><div id="cpuUtilText" style="border: 1px solid #ccc"></div></td>
+        <td><div id="diskUtilText" style="border: 1px solid #ccc"></div></td>
+        <td><div id="memoryUtilText" style="border: 1px solid #ccc"></div></td>
+      </tr>
+    </table>
+  </body>
+</html>
+
+
